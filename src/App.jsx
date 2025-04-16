@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import './App.css'
-import CameraPage from './pages/CameraPage'
-import DoorPhonePage from './pages/DoorPhonePage'
+import HomePage from './pages/HomePage'
+import IntercomPage from './pages/IntercomPage'
+import VideoCameraPage from './pages/CameraPage'
 import ParkingPage from './pages/ParkingPage'
 import ProfilePage from './pages/ProfilePage'
 import LoginPage from './pages/LoginPage'
 import BottomNavbar from './components/BottomNavbar'
-
-
 
 function ProtectedRoute({ children }) {
   const navigate = useNavigate();
@@ -45,60 +44,62 @@ function Layout({ children }) {
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Navigate to="/camera" replace />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/camera"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <CameraPage />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/doorphone"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <DoorPhonePage />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/parking"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ParkingPage />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ProfilePage />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/camera" replace />} />
-      </Routes>
+      <div className="min-h-screen bg-gray-100">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <HomePage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/intercom"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <IntercomPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/camera"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <VideoCameraPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parking"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ParkingPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ProfilePage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
     </Router>
   )
 }
