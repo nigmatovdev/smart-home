@@ -21,7 +21,7 @@ function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://84.54.118.39:8920/auth/login-staff', {
+      const response = await fetch('/api/auth/login-staff', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
