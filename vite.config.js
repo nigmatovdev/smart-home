@@ -4,18 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/smart-home/',
+  base: '',
   plugins: [
     react(), 
     tailwindcss()
-  ],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://84.54.118.39:8920',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
-  }
+  ]
 })
