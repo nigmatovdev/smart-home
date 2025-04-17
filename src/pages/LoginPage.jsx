@@ -21,7 +21,7 @@ function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/login-staff', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login-staff`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
