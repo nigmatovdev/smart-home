@@ -7,7 +7,6 @@ export default async function handler(req, res) {
     method: req.method,
     url: req.url,
     targetUrl,
-    headers: req.headers,
     body: req.body
   });
 
@@ -27,11 +26,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Prepare request body
-    let requestBody;
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-      requestBody = JSON.stringify(req.body);
-    }
+    // Get the raw body from the request
+    const requestBody = req.body;
 
     console.log('Making request to:', {
       targetUrl,
@@ -43,15 +39,9 @@ export default async function handler(req, res) {
       method: req.method,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // Remove headers that might cause issues
-        ...Object.fromEntries(
-          Object.entries(req.headers).filter(([key]) => 
-            !['host', 'connection', 'content-length'].includes(key.toLowerCase())
-          )
-        )
+        'Accept': 'application/json'
       },
-      body: requestBody
+      body: JSON.stringify(requestBody)
     });
 
     console.log('Response status:', response.status);
@@ -76,6 +66,13 @@ export default async function handler(req, res) {
       stack: error.stack,
       targetUrl
     });
+    
+    // If it's a 400 error, forward the error message directly
+    if (error.message.includes('status: 400')) {
+      const errorBody = JSON.parse(error.message.split('body: ')[1]);
+      res.status(400).json(errorBody);
+      return;
+    }
     
     res.status(500).json({ 
       error: 'Internal Server Error',
