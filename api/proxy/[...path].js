@@ -1,6 +1,9 @@
 export default async function handler(req, res) {
-  const { path } = req.query;
-  const targetUrl = `http://84.54.118.39:8920/${path.join('/')}`;
+  // Get the full path from the request
+  const fullPath = req.url.replace('/api/proxy/', '');
+  const targetUrl = `http://84.54.118.39:8920/${fullPath}`;
+
+  console.log('Proxying request to:', targetUrl);
 
   // Add CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -28,10 +31,18 @@ export default async function handler(req, res) {
       body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined,
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (error) {
     console.error('Proxy error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: error.message,
+      targetUrl
+    });
   }
 } 
