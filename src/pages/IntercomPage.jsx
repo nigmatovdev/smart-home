@@ -1,190 +1,143 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import BottomNavbar from '../components/BottomNavbar';
 
 function IntercomPage() {
-  const [activeCall, setActiveCall] = useState(null);
-  const [showAddContact, setShowAddContact] = useState(false);
-  const [newContact, setNewContact] = useState({
-    name: '',
-    phone: '',
-    apartment: '',
-    accessType: 'temporary'
-  });
+  const [isDoorOpen, setIsDoorOpen] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isAcceptingCall, setIsAcceptingCall] = useState(false);
+  const [isOpeningDoor, setIsOpeningDoor] = useState(false);
+  
+  const acceptButtonRef = useRef(null);
+  const doorButtonRef = useRef(null);
 
-  // Mock data for contacts
-  const contacts = [
-    {
-      id: 1,
-      name: 'John Doe',
-      phone: '+1 234 567 890',
-      apartment: '101',
-      accessType: 'permanent',
-      lastAccess: '2 hours ago'
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      phone: '+1 234 567 891',
-      apartment: '102',
-      accessType: 'temporary',
-      lastAccess: '1 day ago'
+  const handleOpenDoor = async () => {
+    try {
+      const token = localStorage.getItem('token'); // Get token from localStorage
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      const response = await fetch('http://84.54.118.39:8920/intercom/control-door', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsDoorOpen(true);
+        setShowSuccessMessage(true);
+        setTimeout(() => {
+          setShowSuccessMessage(false);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error opening door:', error);
     }
-  ];
+  };
 
-  const handleAddContact = () => {
-    // Here you would typically make an API call to add the contact
-    console.log('Adding contact:', newContact);
-    setShowAddContact(false);
-    setNewContact({
-      name: '',
-      phone: '',
-      apartment: '',
-      accessType: 'temporary'
-    });
+  const handleSwipe = (buttonRef, action, setIsSliding) => {
+    const button = buttonRef.current;
+    let startX = 0;
+    let currentX = 0;
+    const threshold = 100; // Minimum distance to trigger action
+
+    const handleTouchStart = (e) => {
+      startX = e.touches[0].clientX;
+      button.style.transition = 'none';
+    };
+
+    const handleTouchMove = (e) => {
+      currentX = e.touches[0].clientX - startX;
+      if (currentX > 0 && currentX < threshold) {
+        button.style.transform = `translateX(${currentX}px)`;
+      }
+    };
+
+    const handleTouchEnd = () => {
+      button.style.transition = 'transform 0.3s ease';
+      if (currentX >= threshold) {
+        button.style.transform = 'translateX(100%)';
+        setIsSliding(true);
+        action();
+        setTimeout(() => {
+          button.style.transform = 'translateX(0)';
+          setIsSliding(false);
+        }, 1000);
+      } else {
+        button.style.transform = 'translateX(0)';
+      }
+    };
+
+    button.addEventListener('touchstart', handleTouchStart);
+    button.addEventListener('touchmove', handleTouchMove);
+    button.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      button.removeEventListener('touchstart', handleTouchStart);
+      button.removeEventListener('touchmove', handleTouchMove);
+      button.removeEventListener('touchend', handleTouchEnd);
+    };
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-16">
+    <div className="min-h-screen bg-gray-100 pb-16 flex flex-col">
       <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4">
           <div className="flex justify-between h-16 items-center">
             <h1 className="text-xl font-bold text-gray-900">Intercom</h1>
           </div>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 sm:px-0">
-          {/* Active Call Section */}
-          {activeCall ? (
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Active Call</h2>
-                  <p className="text-gray-600">{activeCall.name}</p>
-                </div>
-                <div className="flex space-x-4">
-                  <button className="p-3 rounded-full bg-red-500 text-white hover:bg-red-600">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                    </svg>
-                  </button>
-                  <button className="p-3 rounded-full bg-green-500 text-white hover:bg-green-600">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </button>
-                </div>
+      <main className="flex-1 flex flex-col justify-center">
+        <div className="px-4">
+          {/* Camera Stream Placeholder */}
+          <div className="bg-gray-800 rounded-lg shadow-lg mb-8">
+            <div className="aspect-w-16 aspect-h-9">
+              <div className="w-full h-[300px] flex items-center justify-center text-white">
+                <span className="text-xl">Camera Stream Placeholder</span>
               </div>
             </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-              <div className="text-center">
-                <p className="text-gray-600">No active calls</p>
-              </div>
+          </div>
+
+          {/* Control Buttons */}
+          <div className="max-w-2xs mx-auto flex justify-between">
+            {/* Accept Call Button */}
+            <button
+              onClick={() => setIsAcceptingCall(true)}
+              className="w-20 h-20 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 transition-colors"
+              disabled={isAcceptingCall}
+            >
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+            </button>
+
+            {/* Open Door Button */}
+            <button
+              onClick={handleOpenDoor}
+              className="w-20 h-20 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 transition-colors"
+              disabled={isOpeningDoor || isDoorOpen}
+            >
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Success Message */}
+          {showSuccessMessage && (
+            <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+              Door opened !
             </div>
           )}
-
-          {/* Contacts Section */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Contacts</h2>
-              <button
-                onClick={() => setShowAddContact(true)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                Add Contact
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {contacts.map((contact) => (
-                <div key={contact.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{contact.name}</h3>
-                    <p className="text-sm text-gray-500">{contact.phone} • {contact.apartment}</p>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      contact.accessType === 'permanent' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {contact.accessType}
-                    </span>
-                    <button className="text-red-500 hover:text-red-600">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </main>
-
-      {/* Add Contact Modal */}
-      {showAddContact && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">Add New Contact</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Name</label>
-                <input
-                  type="text"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={newContact.name}
-                  onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phone</label>
-                <input
-                  type="tel"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={newContact.phone}
-                  onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Apartment</label>
-                <input
-                  type="text"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={newContact.apartment}
-                  onChange={(e) => setNewContact({ ...newContact, apartment: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Access Type</label>
-                <select
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={newContact.accessType}
-                  onChange={(e) => setNewContact({ ...newContact, accessType: e.target.value })}
-                >
-                  <option value="permanent">Permanent</option>
-                  <option value="temporary">Temporary</option>
-                </select>
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end space-x-4">
-              <button
-                onClick={() => setShowAddContact(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddContact}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-              >
-                Add Contact
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <BottomNavbar />
     </div>
