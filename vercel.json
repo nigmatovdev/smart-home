@@ -13,8 +13,12 @@
   ],
   "routes": [
     {
+      "src": "/api/proxy/stream/(.*)",
+      "dest": "http://45.9.228.21:8084/$1"
+    },
+    {
       "src": "/api/proxy/(.*)",
-      "dest": "/api/proxy/[...path].js"
+      "dest": "http://84.54.118.39:8920/$1"
     },
     {
       "handle": "filesystem"
@@ -22,16 +26,6 @@
     {
       "src": "/(.*)",
       "dest": "/index.html"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/proxy/stream/:path*",
-      "destination": "http://45.9.228.21:8084/:path*"
-    },
-    {
-      "source": "/api/proxy/:path*",
-      "destination": "http://84.54.118.39:8920/:path*"
     }
   ],
   "headers": [

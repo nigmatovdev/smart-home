@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 const IntercomStream = () => {
   const videoRef = useRef(null);
   const [error, setError] = useState(null);
+  const [isConnecting, setIsConnecting] = useState(false);
   let webrtc = null;
   let mediaStream = null;
 
@@ -17,6 +18,7 @@ const IntercomStream = () => {
 
   const startPlay = async () => {
     try {
+      setIsConnecting(true);
       mediaStream = new MediaStream();
       videoRef.current.srcObject = mediaStream;
 
@@ -35,10 +37,12 @@ const IntercomStream = () => {
       webrtc.ontrack = (event) => {
         console.log(event.streams.length + ' track delivered');
         mediaStream.addTrack(event.track);
+        setIsConnecting(false);
       };
     } catch (err) {
       console.error("Error starting play:", err);
       setError("Failed to initialize video stream");
+      setIsConnecting(false);
     }
   };
 
@@ -89,6 +93,7 @@ const IntercomStream = () => {
     } catch (err) {
       console.error("Negotiation error", err);
       setError("Failed to establish video connection");
+      setIsConnecting(false);
     }
   };
 
@@ -96,6 +101,7 @@ const IntercomStream = () => {
     console.log("ICE connection state changed:", webrtc.iceConnectionState);
     if (webrtc.iceConnectionState === 'failed') {
       setError("Connection failed. Please try again.");
+      setIsConnecting(false);
     }
   };
 
@@ -120,6 +126,12 @@ const IntercomStream = () => {
             </button>
           </div>
         </div>
+      ) : isConnecting ? (
+        <div className="w-full h-[300px] flex items-center justify-center bg-gray-800 rounded-lg">
+          <div className="text-white text-center">
+            <p className="text-lg font-medium">Connecting to video stream...</p>
+          </div>
+        </div>
       ) : (
         <video
           ref={videoRef}
@@ -127,7 +139,7 @@ const IntercomStream = () => {
           autoPlay
           muted
           playsInline
-          className="w-full object-cover rounded-lg"
+          className="w-full h-[300px] object-cover rounded-lg"
         />
       )}
     </div>
