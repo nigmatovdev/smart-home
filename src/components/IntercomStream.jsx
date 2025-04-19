@@ -50,7 +50,7 @@ const IntercomStream = () => {
       let uuid = "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e";
       let channel = "0";
       
-      // Use the Vite proxy for the WebRTC stream
+      // Use the Vercel proxy for the WebRTC stream
       const url = `/api/proxy/stream/${uuid}/channel/${channel}/webrtc?uuid=${uuid}&channel=${channel}`;
       console.log('Making WebRTC request to:', url);
 
