@@ -37,17 +37,18 @@ const IntercomStream = () => {
       webrtc.ontrack = (event) => {
         console.log(event.streams.length + ' track delivered');
         mediaStream.addTrack(event.track);
-        setIsConnecting(false);
       };
     } catch (err) {
       console.error("Error starting play:", err);
       setError("Failed to initialize video stream");
+    } finally {
       setIsConnecting(false);
     }
   };
 
   const handleNegotiationNeeded = async () => {
     try {
+      setIsConnecting(true);
       let offer = await webrtc.createOffer();
       await webrtc.setLocalDescription(offer);
 
@@ -93,6 +94,7 @@ const IntercomStream = () => {
     } catch (err) {
       console.error("Negotiation error", err);
       setError("Failed to establish video connection");
+    } finally {
       setIsConnecting(false);
     }
   };
@@ -101,7 +103,6 @@ const IntercomStream = () => {
     console.log("ICE connection state changed:", webrtc.iceConnectionState);
     if (webrtc.iceConnectionState === 'failed') {
       setError("Connection failed. Please try again.");
-      setIsConnecting(false);
     }
   };
 
@@ -126,21 +127,25 @@ const IntercomStream = () => {
             </button>
           </div>
         </div>
-      ) : isConnecting ? (
-        <div className="w-full h-[300px] flex items-center justify-center bg-gray-800 rounded-lg">
-          <div className="text-white text-center">
-            <p className="text-lg font-medium">Connecting to video stream...</p>
-          </div>
-        </div>
       ) : (
-        <video
-          ref={videoRef}
-          id="videoPlayer"
-          autoPlay
-          muted
-          playsInline
-          className="w-full h-[300px] object-cover rounded-lg"
-        />
+        <div className="relative">
+          <video
+            ref={videoRef}
+            id="videoPlayer"
+            autoPlay
+            muted
+            playsInline
+            className="w-full object-cover rounded-lg"
+          />
+          {isConnecting && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+              <div className="text-white text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+                <p className="mt-2">Connecting...</p>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

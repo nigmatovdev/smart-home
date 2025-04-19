@@ -50,6 +50,18 @@ export default async function handler(req, res) {
       }
     });
 
+    // For video stream requests, handle the body differently
+    let body;
+    if (isVideoStream && req.method === 'POST') {
+      body = new URLSearchParams({
+        data: requestBody.data || ''
+      }).toString();
+    } else {
+      body = req.method !== 'GET' && req.method !== 'HEAD' 
+        ? JSON.stringify(requestBody)
+        : undefined;
+    }
+
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: {
@@ -57,9 +69,7 @@ export default async function handler(req, res) {
         'Accept': 'application/json',
         'Authorization': req.headers.authorization
       },
-      body: req.method !== 'GET' && req.method !== 'HEAD' 
-        ? (isVideoStream ? requestBody : JSON.stringify(requestBody))
-        : undefined
+      body
     });
 
     console.log('Response status:', response.status);
