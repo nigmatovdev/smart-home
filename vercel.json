@@ -13,8 +13,8 @@
   ],
   "rewrites": [
     {
-      "source": "/api/proxy/stream/:path*",
-      "destination": "http://45.9.228.21:8084/:path*"
+      "source": "/api/proxy/stream/:uuid/channel/:channel/webrtc",
+      "destination": "http://45.9.228.21:8084/stream/:uuid/channel/:channel/webrtc"
     },
     {
       "source": "/api/proxy/:path*",

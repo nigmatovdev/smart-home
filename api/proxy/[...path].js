@@ -3,7 +3,7 @@ export default async function handler(req, res) {
   const fullPath = req.url.replace('/api/proxy/', '');
   
   // Check if this is a video stream request
-  const isVideoStream = fullPath.startsWith('stream/');
+  const isVideoStream = fullPath.startsWith('stream/') && fullPath.includes('webrtc');
   
   // Set the target URL based on the request type
   const targetUrl = isVideoStream 
