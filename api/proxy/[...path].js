@@ -1,12 +1,21 @@
 export default async function handler(req, res) {
   // Get the full path from the request
   const fullPath = req.url.replace('/api/proxy/', '');
-  const targetUrl = `http://84.54.118.39:8920/${fullPath}`;
+  
+  // Check if this is a video stream request
+  const isVideoStream = fullPath.startsWith('stream/');
+  
+  // Set the target URL based on the request type
+  const targetUrl = isVideoStream 
+    ? `http://45.9.228.21:8084/${fullPath}`
+    : `http://84.54.118.39:8920/${fullPath}`;
 
   console.log('Request details:', {
     method: req.method,
     url: req.url,
+    fullPath,
     targetUrl,
+    isVideoStream,
     headers: req.headers,
     body: req.body
   });
@@ -35,7 +44,7 @@ export default async function handler(req, res) {
       method: req.method,
       body: requestBody,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': isVideoStream ? 'application/x-www-form-urlencoded' : 'application/json',
         'Accept': 'application/json',
         'Authorization': req.headers.authorization
       }
@@ -44,11 +53,13 @@ export default async function handler(req, res) {
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': isVideoStream ? 'application/x-www-form-urlencoded' : 'application/json',
         'Accept': 'application/json',
         'Authorization': req.headers.authorization
       },
-      body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(requestBody) : undefined
+      body: req.method !== 'GET' && req.method !== 'HEAD' 
+        ? (isVideoStream ? requestBody : JSON.stringify(requestBody))
+        : undefined
     });
 
     console.log('Response status:', response.status);
@@ -63,10 +74,15 @@ export default async function handler(req, res) {
       throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
     }
 
-    const data = await response.json();
-    console.log('Success response:', data);
-    
-    res.status(response.status).json(data);
+    // For video stream responses, return the raw text
+    if (isVideoStream) {
+      const text = await response.text();
+      res.status(response.status).send(text);
+    } else {
+      const data = await response.json();
+      console.log('Success response:', data);
+      res.status(response.status).json(data);
+    }
   } catch (error) {
     console.error('Proxy error details:', {
       message: error.message,

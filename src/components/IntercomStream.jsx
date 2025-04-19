@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const IntercomStream = () => {
   const videoRef = useRef(null);
+  const [error, setError] = useState(null);
   let webrtc = null;
   let mediaStream = null;
 
@@ -15,24 +16,30 @@ const IntercomStream = () => {
   }, []);
 
   const startPlay = async () => {
-    mediaStream = new MediaStream();
-    videoRef.current.srcObject = mediaStream;
+    try {
+      mediaStream = new MediaStream();
+      videoRef.current.srcObject = mediaStream;
 
-    webrtc = new RTCPeerConnection({
-      iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
-      sdpSemantics: "unified-plan"
-    });
+      webrtc = new RTCPeerConnection({
+        iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
+        sdpSemantics: "unified-plan"
+      });
 
-    webrtc.addTransceiver("video", { direction: "recvonly" });
-    webrtc.addTransceiver("audio", { direction: "recvonly" });
+      webrtc.addTransceiver("video", { direction: "recvonly" });
+      webrtc.addTransceiver("audio", { direction: "recvonly" });
 
-    webrtc.onnegotiationneeded = handleNegotiationNeeded;
-    webrtc.onsignalingstatechange = signalingStateChange;
+      webrtc.onnegotiationneeded = handleNegotiationNeeded;
+      webrtc.onsignalingstatechange = signalingStateChange;
+      webrtc.oniceconnectionstatechange = handleIceConnectionStateChange;
 
-    webrtc.ontrack = (event) => {
-      console.log(event.streams.length + ' track delivered');
-      mediaStream.addTrack(event.track);
-    };
+      webrtc.ontrack = (event) => {
+        console.log(event.streams.length + ' track delivered');
+        mediaStream.addTrack(event.track);
+      };
+    } catch (err) {
+      console.error("Error starting play:", err);
+      setError("Failed to initialize video stream");
+    }
   };
 
   const handleNegotiationNeeded = async () => {
@@ -42,7 +49,10 @@ const IntercomStream = () => {
 
       let uuid = "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e";
       let channel = "0";
-      let url = `http://45.9.228.21:8084/stream/${uuid}/channel/${channel}/webrtc?uuid=${uuid}&channel=${channel}`;
+      
+      // Use the Vite proxy for the WebRTC stream
+      const url = `/api/proxy/stream/${uuid}/channel/${channel}/webrtc?uuid=${uuid}&channel=${channel}`;
+      console.log('Making WebRTC request to:', url);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -54,14 +64,38 @@ const IntercomStream = () => {
         }),
       });
 
-      const data = await response.text();
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('WebRTC request failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      webrtc.setRemoteDescription(new RTCSessionDescription({
-        type: 'answer',
-        sdp: atob(data),
-      }));
+      const data = await response.text();
+      console.log('Received WebRTC response:', data);
+
+      try {
+        webrtc.setRemoteDescription(new RTCSessionDescription({
+          type: 'answer',
+          sdp: atob(data),
+        }));
+      } catch (sdpError) {
+        console.error('Error setting remote description:', sdpError);
+        throw new Error('Failed to set remote description');
+      }
     } catch (err) {
       console.error("Negotiation error", err);
+      setError("Failed to establish video connection");
+    }
+  };
+
+  const handleIceConnectionStateChange = () => {
+    console.log("ICE connection state changed:", webrtc.iceConnectionState);
+    if (webrtc.iceConnectionState === 'failed') {
+      setError("Connection failed. Please try again.");
     }
   };
 
@@ -71,14 +105,31 @@ const IntercomStream = () => {
 
   return (
     <div className="w-full">
-      <video
-        ref={videoRef}
-        id="videoPlayer"
-        autoPlay
-        muted
-        playsInline
-        className="w-full object-cover rounded-lg"
-      />
+      {error ? (
+        <div className="w-full h-[300px] flex items-center justify-center bg-gray-800 rounded-lg">
+          <div className="text-white text-center">
+            <p className="text-lg font-medium">{error}</p>
+            <button 
+              onClick={() => {
+                setError(null);
+                startPlay();
+              }}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      ) : (
+        <video
+          ref={videoRef}
+          id="videoPlayer"
+          autoPlay
+          muted
+          playsInline
+          className="w-full object-cover rounded-lg"
+        />
+      )}
     </div>
   );
 };
