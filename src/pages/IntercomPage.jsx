@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import BottomNavbar from '../components/BottomNavbar';
+import IntercomStream from '../components/IntercomStream';
 
 function IntercomPage() {
   const [isDoorOpen, setIsDoorOpen] = useState(false);
@@ -96,13 +97,9 @@ function IntercomPage() {
 
       <main className="flex-1 flex flex-col justify-center">
         <div className="px-4">
-          {/* Camera Stream Placeholder */}
+          {/* Camera Stream */}
           <div className="bg-gray-800 rounded-lg shadow-lg mb-8">
-            <div className="aspect-w-16 aspect-h-9">
-              <div className="w-full h-[300px] flex items-center justify-center text-white">
-                <span className="text-xl">Camera Stream Placeholder</span>
-              </div>
-            </div>
+            <IntercomStream />
           </div>
 
           {/* Control Buttons */}
@@ -133,7 +130,7 @@ function IntercomPage() {
           {/* Success Message */}
           {showSuccessMessage && (
             <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
-              Door opened !
+              Door opened successfully!
             </div>
           )}
         </div>
