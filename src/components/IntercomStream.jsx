@@ -23,7 +23,11 @@ const IntercomStream = () => {
       videoRef.current.srcObject = mediaStream;
 
       webrtc = new RTCPeerConnection({
-        iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
+        iceServers: [
+          { urls: ["stun:stun.l.google.com:19302"] },
+          { urls: ["stun:stun1.l.google.com:19302"] },
+          { urls: ["stun:stun2.l.google.com:19302"] }
+        ],
         sdpSemantics: "unified-plan"
       });
 
@@ -33,6 +37,7 @@ const IntercomStream = () => {
       webrtc.onnegotiationneeded = handleNegotiationNeeded;
       webrtc.onsignalingstatechange = signalingStateChange;
       webrtc.oniceconnectionstatechange = handleIceConnectionStateChange;
+      webrtc.onicecandidate = handleIceCandidate;
 
       webrtc.ontrack = (event) => {
         console.log(event.streams.length + ' track delivered');
@@ -49,7 +54,10 @@ const IntercomStream = () => {
   const handleNegotiationNeeded = async () => {
     try {
       setIsConnecting(true);
-      let offer = await webrtc.createOffer();
+      let offer = await webrtc.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      });
       await webrtc.setLocalDescription(offer);
 
       let uuid = "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e";
@@ -58,6 +66,7 @@ const IntercomStream = () => {
       // Use the Vercel proxy for the WebRTC stream
       const url = `/api/proxy/stream/${uuid}/channel/${channel}/webrtc?uuid=${uuid}&channel=${channel}`;
       console.log('Making WebRTC request to:', url);
+      console.log('SDP offer:', webrtc.localDescription.sdp);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -83,10 +92,12 @@ const IntercomStream = () => {
       console.log('Received WebRTC response:', data);
 
       try {
-        webrtc.setRemoteDescription(new RTCSessionDescription({
+        const answer = new RTCSessionDescription({
           type: 'answer',
           sdp: atob(data),
-        }));
+        });
+        console.log('Setting remote description:', answer);
+        await webrtc.setRemoteDescription(answer);
       } catch (sdpError) {
         console.error('Error setting remote description:', sdpError);
         throw new Error('Failed to set remote description');
@@ -96,6 +107,12 @@ const IntercomStream = () => {
       setError("Failed to establish video connection");
     } finally {
       setIsConnecting(false);
+    }
+  };
+
+  const handleIceCandidate = (event) => {
+    if (event.candidate) {
+      console.log('New ICE candidate:', event.candidate);
     }
   };
 

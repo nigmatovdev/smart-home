@@ -53,8 +53,10 @@ export default async function handler(req, res) {
     // For video stream requests, handle the body differently
     let body;
     if (isVideoStream && req.method === 'POST') {
+      // Extract the SDP data from the request body
+      const sdpData = requestBody.data || '';
       body = new URLSearchParams({
-        data: requestBody.data || ''
+        data: sdpData
       }).toString();
     } else {
       body = req.method !== 'GET' && req.method !== 'HEAD' 
@@ -87,6 +89,7 @@ export default async function handler(req, res) {
     // For video stream responses, return the raw text
     if (isVideoStream) {
       const text = await response.text();
+      console.log('Video stream response:', text);
       res.status(response.status).send(text);
     } else {
       const data = await response.json();
