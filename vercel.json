@@ -17,8 +17,11 @@
       "dest": "/api/proxy/[...path].js"
     },
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/index.html"
     }
   ]
 } 
