@@ -7,6 +7,7 @@ export default async function handler(req, res) {
     method: req.method,
     url: req.url,
     targetUrl,
+    headers: req.headers,
     body: req.body
   });
 
@@ -16,7 +17,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
   );
 
   // Handle OPTIONS request
@@ -32,16 +33,22 @@ export default async function handler(req, res) {
     console.log('Making request to:', {
       targetUrl,
       method: req.method,
-      body: requestBody
+      body: requestBody,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': req.headers.authorization
+      }
     });
 
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Authorization': req.headers.authorization
       },
-      body: JSON.stringify(requestBody)
+      body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(requestBody) : undefined
     });
 
     console.log('Response status:', response.status);
