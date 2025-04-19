@@ -18,7 +18,7 @@ function IntercomPage() {
         return;
       }
 
-      const response = await fetch('http://84.54.118.39:8920/intercom/control-door', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/intercom/control-door`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
