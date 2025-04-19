@@ -11,24 +11,6 @@
       "config": { "distDir": "dist" }
     }
   ],
-  "routes": [
-    {
-      "src": "/api/proxy/stream/(.*)",
-      "dest": "/api/proxy/[...path].js",
-      "methods": ["GET", "POST", "OPTIONS"]
-    },
-    {
-      "src": "/api/proxy/(.*)",
-      "dest": "/api/proxy/[...path].js"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "rewrites": [
     {
       "source": "/api/proxy/stream/:path*",
@@ -37,6 +19,10 @@
     {
       "source": "/api/proxy/:path*",
       "destination": "http://84.54.118.39:8920/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
