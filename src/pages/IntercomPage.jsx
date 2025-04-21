@@ -5,8 +5,7 @@ import IntercomStream from '../components/IntercomStream';
 // Intercom stream configuration
 const INTERCOM_STREAM = {
   uuid: "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e",
-  channel: "0",
-  name: "Intercom Camera"
+  channel: "0"
 };
 
 function IntercomPage() {
@@ -106,10 +105,10 @@ function IntercomPage() {
         <div className="px-4">
           {/* Camera Stream */}
           <div className="bg-gray-800 rounded-lg shadow-lg mb-8">
-            <IntercomStream 
+            <IntercomStream
               uuid={INTERCOM_STREAM.uuid}
               channel={INTERCOM_STREAM.channel}
-              name={INTERCOM_STREAM.name}
+              compact={true}
             />
           </div>
 

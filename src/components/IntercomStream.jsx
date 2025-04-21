@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const IntercomStream = ({ uuid, channel, name }) => {
+const IntercomStream = ({ uuid, channel, name, compact = false }) => {
   const videoRef = useRef(null);
   const [error, setError] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -122,6 +122,48 @@ const IntercomStream = ({ uuid, channel, name }) => {
   const signalingStateChange = () => {
     console.log("Signaling state changed:", webrtc.signalingState);
   };
+
+  if (compact) {
+    return (
+      <div className="relative w-full h-full">
+        {error ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+            <div className="text-white text-center">
+              <p className="text-lg font-medium">{error}</p>
+              <button 
+                onClick={() => {
+                  setError(null);
+                  startPlay();
+                }}
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <video
+              ref={videoRef}
+              id="videoPlayer"
+              autoPlay
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            />
+            {isConnecting && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="text-white text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+                  <p className="mt-2">Connecting...</p>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
