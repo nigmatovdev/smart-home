@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const IntercomStream = () => {
+const IntercomStream = ({ uuid, channel, name }) => {
   const videoRef = useRef(null);
   const [error, setError] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -14,7 +14,7 @@ const IntercomStream = () => {
         webrtc.close();
       }
     };
-  }, []);
+  }, [uuid, channel]);
 
   const startPlay = async () => {
     try {
@@ -59,11 +59,7 @@ const IntercomStream = () => {
         offerToReceiveVideo: true
       });
       await webrtc.setLocalDescription(offer);
-
-      let uuid = "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e";
-      let channel = "0";
       
-      // Use the Vercel proxy for the WebRTC stream
       const url = `/api/proxy/stream/${uuid}/channel/${channel}/webrtc?uuid=${uuid}&channel=${channel}`;
       console.log('Making WebRTC request to:', url);
       console.log('SDP offer:', webrtc.localDescription.sdp);
@@ -129,41 +125,48 @@ const IntercomStream = () => {
 
   return (
     <div className="w-full">
-      {error ? (
-        <div className="w-full h-[300px] flex items-center justify-center bg-gray-800 rounded-lg">
-          <div className="text-white text-center">
-            <p className="text-lg font-medium">{error}</p>
-            <button 
-              onClick={() => {
-                setError(null);
-                startPlay();
-              }}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="relative">
-          <video
-            ref={videoRef}
-            id="videoPlayer"
-            autoPlay
-            muted
-            playsInline
-            className="w-full object-cover rounded-lg"
-          />
-          {isConnecting && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="aspect-w-16 aspect-h-9">
+          {error ? (
+            <div className="w-full h-[300px] flex items-center justify-center bg-gray-800 rounded-lg">
               <div className="text-white text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-                <p className="mt-2">Connecting...</p>
+                <p className="text-lg font-medium">{error}</p>
+                <button 
+                  onClick={() => {
+                    setError(null);
+                    startPlay();
+                  }}
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  Retry
+                </button>
               </div>
+            </div>
+          ) : (
+            <div className="relative">
+              <video
+                ref={videoRef}
+                id="videoPlayer"
+                autoPlay
+                muted
+                playsInline
+                className="w-full object-cover rounded-lg"
+              />
+              {isConnecting && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
+                  <div className="text-white text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+                    <p className="mt-2">Connecting...</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+        <div className="p-4">
+          <h3 className="font-medium">{name}</h3>
+        </div>
+      </div>
     </div>
   );
 };

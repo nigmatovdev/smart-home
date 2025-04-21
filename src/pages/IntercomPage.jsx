@@ -2,6 +2,13 @@ import { useState, useRef } from 'react';
 import BottomNavbar from '../components/BottomNavbar';
 import IntercomStream from '../components/IntercomStream';
 
+// Intercom stream configuration
+const INTERCOM_STREAM = {
+  uuid: "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e",
+  channel: "0",
+  name: "Intercom Camera"
+};
+
 function IntercomPage() {
   const [isDoorOpen, setIsDoorOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -13,7 +20,7 @@ function IntercomPage() {
 
   const handleOpenDoor = async () => {
     try {
-      const token = localStorage.getItem('token'); // Get token from localStorage
+      const token = localStorage.getItem('token');
       if (!token) {
         console.error('No authentication token found');
         return;
@@ -45,7 +52,7 @@ function IntercomPage() {
     const button = buttonRef.current;
     let startX = 0;
     let currentX = 0;
-    const threshold = 100; // Minimum distance to trigger action
+    const threshold = 100;
 
     const handleTouchStart = (e) => {
       startX = e.touches[0].clientX;
@@ -99,7 +106,11 @@ function IntercomPage() {
         <div className="px-4">
           {/* Camera Stream */}
           <div className="bg-gray-800 rounded-lg shadow-lg mb-8">
-            <IntercomStream />
+            <IntercomStream 
+              uuid={INTERCOM_STREAM.uuid}
+              channel={INTERCOM_STREAM.channel}
+              name={INTERCOM_STREAM.name}
+            />
           </div>
 
           {/* Control Buttons */}
