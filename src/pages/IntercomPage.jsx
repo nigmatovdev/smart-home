@@ -3,9 +3,10 @@ import BottomNavbar from '../components/BottomNavbar';
 import IntercomStream from '../components/IntercomStream';
 
 // Intercom stream configuration
-const INTERCOM_STREAM = {
+const INTERCOM_CONFIG = {
   uuid: "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e",
-  channel: "0"
+  channel: "0",
+  id: "591d519b-fa23-43be-9f55-646f201a0e4f"
 };
 
 function IntercomPage() {
@@ -19,13 +20,14 @@ function IntercomPage() {
 
   const handleOpenDoor = async () => {
     try {
+      setIsOpeningDoor(true);
       const token = localStorage.getItem('token');
       if (!token) {
         console.error('No authentication token found');
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/intercom/control-door`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/intercom/control-door/${INTERCOM_CONFIG.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -40,10 +42,18 @@ function IntercomPage() {
         setShowSuccessMessage(true);
         setTimeout(() => {
           setShowSuccessMessage(false);
+          setIsDoorOpen(false);
         }, 3000);
+      } else {
+        throw new Error(data.message || 'Failed to open door');
       }
     } catch (error) {
       console.error('Error opening door:', error);
+      setShowSuccessMessage(false);
+      // Show error message to user
+      alert('Failed to open door: ' + error.message);
+    } finally {
+      setIsOpeningDoor(false);
     }
   };
 
@@ -106,8 +116,8 @@ function IntercomPage() {
           {/* Camera Stream */}
           <div className="bg-gray-800 rounded-lg shadow-lg mb-8">
             <IntercomStream
-              uuid={INTERCOM_STREAM.uuid}
-              channel={INTERCOM_STREAM.channel}
+              uuid={INTERCOM_CONFIG.uuid}
+              channel={INTERCOM_CONFIG.channel}
               compact={true}
             />
           </div>
