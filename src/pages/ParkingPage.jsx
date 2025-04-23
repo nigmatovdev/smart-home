@@ -105,10 +105,7 @@ function ParkingPage() {
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">Parking</h1>
-              <HouseSelector onHouseChange={setSelectedHouse} />
-            </div>
+            <h1 className="text-xl font-bold text-gray-900">Parking</h1>
             {cars.length < 2 && (
               <button
                 onClick={() => setShowAddForm(true)}
@@ -124,6 +121,9 @@ function ParkingPage() {
       </div>
 
       <main className="flex-1 p-4">
+        <div className="mb-4">
+          <HouseSelector onHouseChange={setSelectedHouse} />
+        </div>
         {/* Add/Edit Car Form */}
         {(showAddForm || showEditForm) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -253,7 +253,7 @@ function ParkingPage() {
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                         <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 17h14M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0M7 9l2-4h6l2 4M3 13v4h18v-4l-2-4H5l-2 4z" />
                         </svg>
                       </div>
                       <div>

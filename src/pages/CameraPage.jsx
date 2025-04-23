@@ -73,15 +73,15 @@ function CameraPage() {
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">Cameras</h1>
-              <HouseSelector onHouseChange={setSelectedHouse} />
-            </div>
+            <h1 className="text-xl font-bold text-gray-900">Cameras</h1>
           </div>
         </div>
       </div>
 
       <main className="p-4">
+        <div className="mb-4">
+          <HouseSelector onHouseChange={setSelectedHouse} />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Object.entries(streams[selectedHouse]).map(([uuid, stream]) => (
             <div key={uuid} className="col-span-1">

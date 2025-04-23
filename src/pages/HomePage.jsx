@@ -61,15 +61,15 @@ function HomePage() {
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">Smart Home</h1>
-              <HouseSelector onHouseChange={setSelectedHouse} />
-            </div>
+            <h1 className="text-xl font-bold text-gray-900">Smart Home</h1>
           </div>
         </div>
       </div>
 
       <main className="p-4">
+        <div className="mb-4">
+          <HouseSelector onHouseChange={setSelectedHouse} />
+        </div>
         <div className="space-y-6">
 
           {/* Intercom Preview */}

@@ -117,16 +117,16 @@ function IntercomPage() {
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">Intercom</h1>
-              <HouseSelector onHouseChange={setSelectedHouse} />
-            </div>
+            <h1 className="text-xl font-bold text-gray-900">Intercom</h1>
           </div>
         </div>
       </div>
 
       <main className="flex-1 flex flex-col justify-center">
         <div className="px-4">
+          <div className="mb-4">
+            <HouseSelector onHouseChange={setSelectedHouse} />
+          </div>
           {/* Camera Stream */}
           <div className="bg-gray-800 rounded-lg shadow-lg mb-8">
             <IntercomStream
