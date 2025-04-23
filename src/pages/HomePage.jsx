@@ -1,134 +1,143 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import BottomNavbar from '../components/BottomNavbar';
+import IntercomStream from '../components/IntercomStream';
+import HouseSelector from '../components/HouseSelector';
 
 function HomePage() {
-  const features = [
-    {
-      title: 'Intercom',
-      description: 'Manage doorphone calls and access control',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-        </svg>
-      ),
-      path: '/intercom',
-      color: 'bg-blue-500'
+  const [selectedHouse, setSelectedHouse] = useState(() => {
+    return localStorage.getItem('selectedHouse') || 'house1';
+  });
+
+  const [cars, setCars] = useState([]);
+
+  useEffect(() => {
+    // Load parking data for the selected house
+    const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
+    setCars(savedCars ? JSON.parse(savedCars) : []);
+  }, [selectedHouse]);
+
+  // Camera configurations for preview
+  const cameraConfigs = {
+    house1: {
+      "33bf385c-cdf0-472e-9baf-c67871b33e9c": {
+        "name": "Главный вход",
+        "channels": {
+          "0": {
+            "url": "rtsp://admin:12345678a@10.10.100.125:554/Streaming/Channels/101",
+            "on_demand": true,
+            "status": 1
+          }
+        }
+      }
     },
-    {
-      title: 'Video Camera',
-      description: 'Monitor security cameras in real-time',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-      ),
-      path: '/camera',
-      color: 'bg-green-500'
-    },
-    {
-      title: 'Parking',
-      description: 'Manage parking spaces and vehicle access',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11h16V10l-8-3.5L4 10z" />
-        </svg>
-      ),
-      path: '/parking',
-      color: 'bg-purple-500'
-    },
-    {
-      title: 'Profile',
-      description: 'Manage your account and settings',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
-      path: '/profile',
-      color: 'bg-yellow-500'
+    house2: {
+      "e8d60039-5a7d-4cd8-9a95-321bee492cb9": {
+        "name": "Задний вход",
+        "channels": {
+          "0": {
+            "url": "rtsp://admin:12345678a@10.10.100.126:554/Streaming/Channels/101",
+            "on_demand": true
+          }
+        }
+      }
     }
-  ];
+  };
+
+  // Intercom configurations
+  const intercomConfigs = {
+    house1: {
+      uuid: "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e",
+      channel: "0"
+    },
+    house2: {
+      uuid: "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e",
+      channel: "0"
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 pb-16">
       <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-bold text-gray-900">Smart Home</h1>
+            <div className="flex items-center space-x-4">
+              <h1 className="text-xl font-bold text-gray-900">Smart Home</h1>
+              <HouseSelector onHouseChange={setSelectedHouse} />
+            </div>
           </div>
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 sm:px-0">
-          {/* Welcome Section */}
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back!</h2>
-            <p className="text-gray-600">Manage your home security and access from one place.</p>
-          </div>
+      <main className="p-4">
+        <div className="space-y-6">
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-500">Active Visitors</p>
-                  <p className="text-lg font-semibold">2</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-full bg-green-100 text-green-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11h16V10l-8-3.5L4 10z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-500">Available Parking</p>
-                  <p className="text-lg font-semibold">12/20</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-500">Last Activity</p>
-                  <p className="text-lg font-semibold">2 hours ago</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {features.map((feature) => (
-              <Link
-                key={feature.title}
-                to={feature.path}
-                className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow duration-200"
-              >
-                <div className="flex items-start">
-                  <div className={`p-3 rounded-full ${feature.color} text-white`}>
-                    {feature.icon}
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
-                    <p className="text-gray-600">{feature.description}</p>
-                  </div>
-                </div>
+          {/* Intercom Preview */}
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-4 bg-blue-50 border-b flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-blue-900">Intercom</h2>
+              <Link to="/intercom" className="text-blue-600 hover:text-blue-800 font-medium">
+                Open Intercom →
               </Link>
-            ))}
+            </div>
+            <div className="p-4">
+              <IntercomStream
+                uuid={intercomConfigs[selectedHouse].uuid}
+                channel={intercomConfigs[selectedHouse].channel}
+                compact={true}
+              />
+            </div>
+          </div>
+
+          {/* Camera Preview */}
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-4 bg-green-50 border-b flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-green-900">Security Camera</h2>
+              <Link to="/camera" className="text-green-600 hover:text-green-800 font-medium">
+                View All Cameras →
+              </Link>
+            </div>
+            <div className="p-4">
+              {Object.entries(cameraConfigs[selectedHouse])[0] && (
+                <IntercomStream
+                  uuid={Object.entries(cameraConfigs[selectedHouse])[0][0]}
+                  channel="0"
+                  name={Object.entries(cameraConfigs[selectedHouse])[0][1].name}
+                  compact={true}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Parking Preview */}
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-4 bg-purple-50 border-b flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-purple-900">Parking</h2>
+              <Link to="/parking" className="text-purple-600 hover:text-purple-800 font-medium">
+                Manage Parking →
+              </Link>
+            </div>
+            <div className="p-4">
+              <div className="space-y-4">
+                {cars.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">No cars registered</p>
+                ) : (
+                  cars.map(car => (
+                    <div key={car.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11h16V10l-8-3.5L4 10z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900">{car.model}</h3>
+                        <p className="text-sm text-gray-500">{car.plateNumber}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </main>

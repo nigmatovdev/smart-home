@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import BottomNavbar from '../components/BottomNavbar';
+import HouseSelector from '../components/HouseSelector';
 
 function ParkingPage() {
+  const [selectedHouse, setSelectedHouse] = useState(() => {
+    return localStorage.getItem('selectedHouse') || 'house1';
+  });
   const [cars, setCars] = useState(() => {
-    const savedCars = localStorage.getItem('parkingCars');
+    const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
     return savedCars ? JSON.parse(savedCars) : [];
   });
   const [showAddForm, setShowAddForm] = useState(false);
@@ -15,10 +19,16 @@ function ParkingPage() {
     color: ''
   });
 
+  // Update cars when house changes
+  useEffect(() => {
+    const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
+    setCars(savedCars ? JSON.parse(savedCars) : []);
+  }, [selectedHouse]);
+
   // Save to localStorage whenever cars change
   useEffect(() => {
-    localStorage.setItem('parkingCars', JSON.stringify(cars));
-  }, [cars]);
+    localStorage.setItem(`parkingCars_${selectedHouse}`, JSON.stringify(cars));
+  }, [cars, selectedHouse]);
 
   const handleAddCar = (e) => {
     e.preventDefault();
@@ -71,7 +81,10 @@ function ParkingPage() {
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-bold text-gray-900">Parking</h1>
+            <div className="flex items-center space-x-4">
+              <h1 className="text-xl font-bold text-gray-900">Parking</h1>
+              <HouseSelector onHouseChange={setSelectedHouse} />
+            </div>
             {cars.length < 2 && (
               <button
                 onClick={() => setShowAddForm(true)}

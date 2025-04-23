@@ -205,9 +205,6 @@ const IntercomStream = ({ uuid, channel, name, compact = false }) => {
             </div>
           )}
         </div>
-        <div className="p-4">
-          <h3 className="font-medium">{name}</h3>
-        </div>
       </div>
     </div>
   );

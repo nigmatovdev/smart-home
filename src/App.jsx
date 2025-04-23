@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 import './App.css'
 import HomePage from './pages/HomePage'
 import IntercomPage from './pages/IntercomPage'
-import VideoCameraPage from './pages/CameraPage'
+import CameraPage from './pages/CameraPage'
 import ParkingPage from './pages/ParkingPage'
 import ProfilePage from './pages/ProfilePage'
 import LoginPage from './pages/LoginPage'
@@ -72,7 +72,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <VideoCameraPage />
+                  <CameraPage />
                 </Layout>
               </ProtectedRoute>
             }

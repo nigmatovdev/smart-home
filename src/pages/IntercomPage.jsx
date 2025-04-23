@@ -1,15 +1,26 @@
 import { useState, useRef } from 'react';
 import BottomNavbar from '../components/BottomNavbar';
 import IntercomStream from '../components/IntercomStream';
+import HouseSelector from '../components/HouseSelector';
 
-// Intercom stream configuration
-const INTERCOM_CONFIG = {
-  uuid: "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e",
-  channel: "0",
-  id: "591d519b-fa23-43be-9f55-646f201a0e4f"
+// Intercom stream configuration for different houses
+const INTERCOM_CONFIGS = {
+  house1: {
+    uuid: "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e",
+    channel: "0",
+    id: "591d519b-fa23-43be-9f55-646f201a0e4f"
+  },
+  house2: {
+    uuid: "c3b1c7dc-9b6f-409e-bea9-332f8ffb6e3e",
+    channel: "0",
+    id: "591d519b-fa23-43be-9f55-646f201a0e4f"
+  }
 };
 
 function IntercomPage() {
+  const [selectedHouse, setSelectedHouse] = useState(() => {
+    return localStorage.getItem('selectedHouse') || 'house1';
+  });
   const [isDoorOpen, setIsDoorOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isAcceptingCall, setIsAcceptingCall] = useState(false);
@@ -27,7 +38,7 @@ function IntercomPage() {
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/intercom/control-door/${INTERCOM_CONFIG.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/intercom/control-door/${INTERCOM_CONFIGS[selectedHouse].id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -106,7 +117,10 @@ function IntercomPage() {
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-bold text-gray-900">Intercom</h1>
+            <div className="flex items-center space-x-4">
+              <h1 className="text-xl font-bold text-gray-900">Intercom</h1>
+              <HouseSelector onHouseChange={setSelectedHouse} />
+            </div>
           </div>
         </div>
       </div>
@@ -116,8 +130,8 @@ function IntercomPage() {
           {/* Camera Stream */}
           <div className="bg-gray-800 rounded-lg shadow-lg mb-8">
             <IntercomStream
-              uuid={INTERCOM_CONFIG.uuid}
-              channel={INTERCOM_CONFIG.channel}
+              uuid={INTERCOM_CONFIGS[selectedHouse].uuid}
+              channel={INTERCOM_CONFIGS[selectedHouse].channel}
               compact={true}
             />
           </div>
