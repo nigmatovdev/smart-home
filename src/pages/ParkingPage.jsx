@@ -12,7 +12,9 @@ function ParkingPage() {
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [carToDelete, setCarToDelete] = useState(null);
+  const [carToEdit, setCarToEdit] = useState(null);
   const [newCar, setNewCar] = useState({
     plateNumber: '',
     model: '',
@@ -43,6 +45,28 @@ function ParkingPage() {
     setCars([...cars, carWithId]);
     setNewCar({ plateNumber: '', model: '', color: '' });
     setShowAddForm(false);
+  };
+
+  const handleEditCar = (car) => {
+    setCarToEdit(car);
+    setNewCar({
+      plateNumber: car.plateNumber,
+      model: car.model,
+      color: car.color
+    });
+    setShowEditForm(true);
+  };
+
+  const handleUpdateCar = (e) => {
+    e.preventDefault();
+    setCars(cars.map(car => 
+      car.id === carToEdit.id 
+        ? { ...car, ...newCar, updatedAt: new Date().toISOString() }
+        : car
+    ));
+    setNewCar({ plateNumber: '', model: '', color: '' });
+    setShowEditForm(false);
+    setCarToEdit(null);
   };
 
   const handleRemoveCar = (id) => {
@@ -100,12 +124,12 @@ function ParkingPage() {
       </div>
 
       <main className="flex-1 p-4">
-        {/* Add Car Form */}
-        {showAddForm && (
+        {/* Add/Edit Car Form */}
+        {(showAddForm || showEditForm) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md transform transition-all duration-300 scale-100">
-              <h2 className="text-xl font-bold mb-4">Add New Car</h2>
-              <form onSubmit={handleAddCar}>
+              <h2 className="text-xl font-bold mb-4">{showEditForm ? 'Edit Car' : 'Add New Car'}</h2>
+              <form onSubmit={showEditForm ? handleUpdateCar : handleAddCar}>
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="plateNumber">
                     Plate Number
@@ -151,7 +175,12 @@ function ParkingPage() {
                 <div className="flex justify-end space-x-4">
                   <button
                     type="button"
-                    onClick={() => setShowAddForm(false)}
+                    onClick={() => {
+                      setShowAddForm(false);
+                      setShowEditForm(false);
+                      setNewCar({ plateNumber: '', model: '', color: '' });
+                      setCarToEdit(null);
+                    }}
                     className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
                   >
                     Cancel
@@ -160,7 +189,7 @@ function ParkingPage() {
                     type="submit"
                     className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
                   >
-                    Add Car
+                    {showEditForm ? 'Update' : 'Add'} Car
                   </button>
                 </div>
               </form>
@@ -232,17 +261,30 @@ function ParkingPage() {
                         <p className="text-gray-600">Plate: <span className="font-mono bg-gray-100 px-2 py-1 rounded">{car.plateNumber}</span></p>
                         <p className="text-gray-600">Color: <span className="capitalize">{car.color}</span></p>
                         <p className="text-xs text-gray-400 mt-1">Added: {formatDate(car.addedAt)}</p>
+                        {car.updatedAt && (
+                          <p className="text-xs text-gray-400">Updated: {formatDate(car.updatedAt)}</p>
+                        )}
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleRemoveCar(car.id)}
-                    className="text-red-500 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEditCar(car)}
+                      className="text-blue-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-blue-50"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleRemoveCar(car.id)}
+                      className="text-red-500 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
