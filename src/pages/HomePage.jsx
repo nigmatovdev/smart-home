@@ -5,16 +5,34 @@ import IntercomStream from '../components/IntercomStream';
 import HouseSelector from '../components/HouseSelector';
 
 function HomePage() {
-  const [selectedHouse, setSelectedHouse] = useState(() => {
-    return localStorage.getItem('selectedHouse') || 'house1';
-  });
-
+  const [selectedHouse, setSelectedHouse] = useState('house1');
   const [cars, setCars] = useState([]);
 
+  // Initialize state from localStorage after component mount
   useEffect(() => {
-    // Load parking data for the selected house
-    const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
-    setCars(savedCars ? JSON.parse(savedCars) : []);
+    try {
+      const savedHouse = localStorage.getItem('selectedHouse');
+      if (savedHouse) {
+        setSelectedHouse(savedHouse);
+      }
+    } catch (error) {
+      console.error('Error reading selectedHouse from localStorage:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      // Load parking data for the selected house
+      const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
+      if (savedCars) {
+        setCars(JSON.parse(savedCars));
+      } else {
+        setCars([]);
+      }
+    } catch (error) {
+      console.error('Error reading cars from localStorage:', error);
+      setCars([]);
+    }
   }, [selectedHouse]);
 
   // Camera configurations for preview

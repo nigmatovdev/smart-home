@@ -3,13 +3,8 @@ import BottomNavbar from '../components/BottomNavbar';
 import HouseSelector from '../components/HouseSelector';
 
 function ParkingPage() {
-  const [selectedHouse, setSelectedHouse] = useState(() => {
-    return localStorage.getItem('selectedHouse') || 'house1';
-  });
-  const [cars, setCars] = useState(() => {
-    const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
-    return savedCars ? JSON.parse(savedCars) : [];
-  });
+  const [selectedHouse, setSelectedHouse] = useState('house1');
+  const [cars, setCars] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -21,15 +16,40 @@ function ParkingPage() {
     color: ''
   });
 
+  // Initialize state from localStorage after component mount
+  useEffect(() => {
+    try {
+      const savedHouse = localStorage.getItem('selectedHouse');
+      if (savedHouse) {
+        setSelectedHouse(savedHouse);
+      }
+    } catch (error) {
+      console.error('Error reading selectedHouse from localStorage:', error);
+    }
+  }, []);
+
   // Update cars when house changes
   useEffect(() => {
-    const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
-    setCars(savedCars ? JSON.parse(savedCars) : []);
+    try {
+      const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
+      if (savedCars) {
+        setCars(JSON.parse(savedCars));
+      } else {
+        setCars([]);
+      }
+    } catch (error) {
+      console.error('Error reading cars from localStorage:', error);
+      setCars([]);
+    }
   }, [selectedHouse]);
 
   // Save to localStorage whenever cars change
   useEffect(() => {
-    localStorage.setItem(`parkingCars_${selectedHouse}`, JSON.stringify(cars));
+    try {
+      localStorage.setItem(`parkingCars_${selectedHouse}`, JSON.stringify(cars));
+    } catch (error) {
+      console.error('Error saving cars to localStorage:', error);
+    }
   }, [cars, selectedHouse]);
 
   const handleAddCar = (e) => {
