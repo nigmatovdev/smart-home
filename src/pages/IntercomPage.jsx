@@ -113,7 +113,8 @@ function IntercomPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-16 flex flex-col">
+    <div className="min-h-screen bg-gray-100 pb-16">
+      {/* Header */}
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
@@ -122,12 +123,15 @@ function IntercomPage() {
         </div>
       </div>
 
-      <main className="flex-1 flex flex-col justify-center">
-        <div className="px-4">
-          <div className="mb-4">
-            <HouseSelector onHouseChange={setSelectedHouse} />
-          </div>
-          {/* Camera Stream */}
+      {/* House Selector */}
+      <div className="px-4 py-4">
+        <HouseSelector onHouseChange={setSelectedHouse} />
+      </div>
+
+      {/* Main Content - Centered */}
+      <main className="flex-1 flex items-center justify-center min-h-[calc(100vh-16rem)]">
+        <div className="w-full px-4">
+          {/* Intercom Stream */}
           <div className="bg-gray-800 rounded-lg shadow-lg mb-8">
             <IntercomStream
               uuid={INTERCOM_CONFIGS[selectedHouse].uuid}
@@ -140,6 +144,7 @@ function IntercomPage() {
           <div className="max-w-2xs mx-auto flex justify-between">
             {/* Accept Call Button */}
             <button
+              ref={acceptButtonRef}
               onClick={() => setIsAcceptingCall(true)}
               className="w-20 h-20 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 transition-colors"
               disabled={isAcceptingCall}
@@ -151,6 +156,7 @@ function IntercomPage() {
 
             {/* Open Door Button */}
             <button
+              ref={doorButtonRef}
               onClick={handleOpenDoor}
               className="w-20 h-20 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg hover:bg-green-600 transition-colors"
               disabled={isOpeningDoor || isDoorOpen}

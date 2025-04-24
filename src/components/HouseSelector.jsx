@@ -24,10 +24,10 @@ const HouseSelector = ({ onHouseChange }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-3 py-2 bg-white rounded-lg shadow hover:bg-gray-50 transition-colors"
+        className="flex items-center justify-between w-full px-3 py-2 bg-white rounded-lg shadow hover:bg-gray-50 transition-colors"
       >
         <span className="font-medium">{houses.find(h => h.id === selectedHouse)?.name}</span>
         <svg 
@@ -41,7 +41,7 @@ const HouseSelector = ({ onHouseChange }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-full bg-white rounded-lg shadow-lg z-50">
           {houses.map((house) => (
             <button
               key={house.id}
