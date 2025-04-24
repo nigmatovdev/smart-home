@@ -57,12 +57,6 @@ export default defineConfig({
         assetFileNames: 'assets/[name].[hash].[ext]'
       }
     },
-    sourcemap: true,
-    minify: 'terser',
-    terserOptions: {
-      format: {
-        comments: false
-      }
-    }
+    sourcemap: true
   }
 })
