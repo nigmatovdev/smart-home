@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '',
+  base: '/',
   plugins: [
     react(), 
     tailwindcss()
@@ -45,6 +45,14 @@ export default defineConfig({
           });
         },
       },
+    }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+        format: 'es'
+      }
     }
   }
 })
