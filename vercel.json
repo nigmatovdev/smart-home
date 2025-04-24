@@ -13,13 +13,6 @@
   ],
   "rewrites": [
     {
-      "source": "/assets/(.*)",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      },
-      "continue": true
-    },
-    {
       "source": "/api/proxy/stream/:uuid/channel/:channel/webrtc",
       "destination": "http://45.9.228.21:8084/stream/:uuid/channel/:channel/webrtc"
     },
@@ -33,6 +26,15 @@
     }
   ],
   "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
     {
       "source": "/api/proxy/(.*)",
       "headers": [
