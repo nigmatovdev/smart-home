@@ -11,25 +11,25 @@
       "config": { "distDir": "dist" }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/assets/(.*)",
+      "source": "/assets/(.*)",
       "headers": {
         "cache-control": "public, max-age=31536000, immutable"
       },
       "continue": true
     },
     {
-      "src": "/api/proxy/stream/:uuid/channel/:channel/webrtc",
-      "dest": "http://45.9.228.21:8084/stream/:uuid/channel/:channel/webrtc"
+      "source": "/api/proxy/stream/:uuid/channel/:channel/webrtc",
+      "destination": "http://45.9.228.21:8084/stream/:uuid/channel/:channel/webrtc"
     },
     {
-      "src": "/api/proxy/(.*)",
-      "dest": "http://84.54.118.39:8920/$1"
+      "source": "/api/proxy/(.*)",
+      "destination": "http://84.54.118.39:8920/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
