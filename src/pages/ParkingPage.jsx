@@ -3,8 +3,25 @@ import BottomNavbar from '../components/BottomNavbar';
 import HouseSelector from '../components/HouseSelector';
 
 function ParkingPage() {
-  const [selectedHouse, setSelectedHouse] = useState('house1');
-  const [cars, setCars] = useState([]);
+  const [selectedHouse, setSelectedHouse] = useState(() => {
+    try {
+      return localStorage.getItem('selectedHouse') || 'house1';
+    } catch (error) {
+      console.error('Error reading selectedHouse from localStorage:', error);
+      return 'house1';
+    }
+  });
+
+  const [cars, setCars] = useState(() => {
+    try {
+      const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
+      return savedCars ? JSON.parse(savedCars) : [];
+    } catch (error) {
+      console.error('Error reading cars from localStorage:', error);
+      return [];
+    }
+  });
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -16,34 +33,18 @@ function ParkingPage() {
     color: ''
   });
 
-  // Initialize state from localStorage after component mount
-  useEffect(() => {
-    try {
-      const savedHouse = localStorage.getItem('selectedHouse');
-      if (savedHouse) {
-        setSelectedHouse(savedHouse);
-      }
-    } catch (error) {
-      console.error('Error reading selectedHouse from localStorage:', error);
-    }
-  }, []);
-
-  // Update cars when house changes
+  // Load cars when house changes
   useEffect(() => {
     try {
       const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
-      if (savedCars) {
-        setCars(JSON.parse(savedCars));
-      } else {
-        setCars([]);
-      }
+      setCars(savedCars ? JSON.parse(savedCars) : []);
     } catch (error) {
       console.error('Error reading cars from localStorage:', error);
       setCars([]);
     }
   }, [selectedHouse]);
 
-  // Save to localStorage whenever cars change
+  // Save cars to localStorage whenever they change
   useEffect(() => {
     try {
       localStorage.setItem(`parkingCars_${selectedHouse}`, JSON.stringify(cars));
