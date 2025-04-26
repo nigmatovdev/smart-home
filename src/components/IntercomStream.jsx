@@ -13,8 +13,10 @@ const IntercomStream = ({ uuid, channel, compact = false }) => {
     setError(null);
 
     const video = videoRef.current;
-    // Always use relative URL for the proxy endpoint
-    const hlsUrl = `/api/proxy/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`;
+    const isProduction = process.env.NODE_ENV === 'production';
+    const hlsUrl = isProduction 
+      ? `https://${window.location.host}/api/proxy/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`
+      : `/api/proxy/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`;
 
     console.log('Loading HLS stream:', hlsUrl);
 
