@@ -5,6 +5,7 @@ const IntercomStream = ({ uuid, channel, compact = false }) => {
   const videoRef = useRef(null);
   const [error, setError] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const hlsRef = useRef(null);
 
   useEffect(() => {
     let hls;
@@ -14,28 +15,74 @@ const IntercomStream = ({ uuid, channel, compact = false }) => {
     const video = videoRef.current;
     const hlsUrl = `/api/proxy/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`;
 
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Native HLS support (Safari, some mobile browsers)
-      video.src = hlsUrl;
-      video.addEventListener('loadedmetadata', () => setIsConnecting(false));
-      video.addEventListener('error', () => setError('Failed to load video'));
-    } else if (Hls.isSupported()) {
-      hls = new Hls();
-      hls.loadSource(hlsUrl);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => setIsConnecting(false));
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        setError('Failed to load video');
+    console.log('Loading HLS stream:', hlsUrl);
+
+    const loadStream = () => {
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS support (Safari, some mobile browsers)
+        video.src = hlsUrl;
+        video.addEventListener('loadedmetadata', () => {
+          console.log('Video metadata loaded');
+          setIsConnecting(false);
+        });
+        video.addEventListener('error', (e) => {
+          console.error('Video error:', e);
+          setError('Failed to load video');
+        });
+      } else if (Hls.isSupported()) {
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+        }
+        
+        hls = new Hls({
+          debug: true,
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 90
+        });
+        
+        hlsRef.current = hls;
+
+        hls.loadSource(hlsUrl);
+        hls.attachMedia(video);
+        
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          console.log('HLS manifest parsed');
+          setIsConnecting(false);
+        });
+        
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          console.error('HLS error:', event, data);
+          if (data.fatal) {
+            switch(data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.log('Fatal network error, trying to recover...');
+                hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.log('Fatal media error, trying to recover...');
+                hls.recoverMediaError();
+                break;
+              default:
+                console.log('Fatal error, cannot recover');
+                setError('Failed to load video');
+                setIsConnecting(false);
+                break;
+            }
+          }
+        });
+      } else {
+        setError('HLS is not supported in this browser');
         setIsConnecting(false);
-      });
-    } else {
-      setError('HLS is not supported in this browser');
-      setIsConnecting(false);
-    }
+      }
+    };
+
+    loadStream();
 
     return () => {
-      if (hls) {
-        hls.destroy();
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
       }
       if (video) {
         video.src = '';

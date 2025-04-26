@@ -10,14 +10,13 @@ export default async function handler(req, res) {
     ? `http://45.9.228.21:8084/${fullPath}`
     : `http://84.54.118.39:8920/${fullPath}`;
 
-  console.log('Request details:', {
+  console.log('Proxy Request:', {
     method: req.method,
     url: req.url,
     fullPath,
     targetUrl,
     isVideoStream,
-    headers: req.headers,
-    body: req.body
+    headers: req.headers
   });
 
   // Add CORS headers
@@ -36,52 +35,62 @@ export default async function handler(req, res) {
   }
 
   try {
+    // For HLS streams, we need to handle the response differently
+    if (isVideoStream) {
+      const response = await fetch(targetUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Get the content type from the response
+      const contentType = response.headers.get('content-type') || 'application/vnd.apple.mpegurl';
+      
+      // Set the appropriate headers
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      
+      // Stream the response
+      const reader = response.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(value);
+      }
+      res.end();
+      return;
+    }
+
+    // Handle regular API requests
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: {
-        'Content-Type': isVideoStream ? 'application/vnd.apple.mpegurl' : 'application/json',
-        'Accept': isVideoStream ? 'application/vnd.apple.mpegurl' : 'application/json',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': req.headers.authorization
       },
       body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined
     });
 
-    console.log('Response status:', response.status);
-    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Error response:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText
-      });
       throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
     }
 
-    // For video stream responses, return the raw text
-    if (isVideoStream) {
-      const text = await response.text();
-      console.log('Video stream response:', text);
-      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
-      res.status(response.status).send(text);
-    } else {
-      const data = await response.json();
-      console.log('Success response:', data);
-      res.status(response.status).json(data);
-    }
+    const data = await response.json();
+    res.status(response.status).json(data);
   } catch (error) {
-    console.error('Proxy error details:', {
+    console.error('Proxy Error:', {
       message: error.message,
       stack: error.stack,
       targetUrl
     });
-    
-    // If it's a 400 error, forward the error message directly
-    if (error.message.includes('status: 400')) {
-      const errorBody = JSON.parse(error.message.split('body: ')[1]);
-      res.status(400).json(errorBody);
-      return;
-    }
     
     res.status(500).json({ 
       error: 'Internal Server Error',
