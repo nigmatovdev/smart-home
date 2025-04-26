@@ -5,7 +5,7 @@ import HouseSelector from '../components/HouseSelector';
 function ParkingPage() {
   const [selectedHouse, setSelectedHouse] = useState(() => {
     try {
-      return localStorage.getItem('selectedHouse') || 'house1';
+    return localStorage.getItem('selectedHouse') || 'house1';
     } catch (error) {
       console.error('Error reading selectedHouse from localStorage:', error);
       return 'house1';
@@ -14,8 +14,8 @@ function ParkingPage() {
 
   const [cars, setCars] = useState(() => {
     try {
-      const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
-      return savedCars ? JSON.parse(savedCars) : [];
+    const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
+    return savedCars ? JSON.parse(savedCars) : [];
     } catch (error) {
       console.error('Error reading cars from localStorage:', error);
       return [];
@@ -36,8 +36,8 @@ function ParkingPage() {
   // Load cars when house changes
   useEffect(() => {
     try {
-      const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
-      setCars(savedCars ? JSON.parse(savedCars) : []);
+    const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
+    setCars(savedCars ? JSON.parse(savedCars) : []);
     } catch (error) {
       console.error('Error reading cars from localStorage:', error);
       setCars([]);
@@ -47,7 +47,7 @@ function ParkingPage() {
   // Save cars to localStorage whenever they change
   useEffect(() => {
     try {
-      localStorage.setItem(`parkingCars_${selectedHouse}`, JSON.stringify(cars));
+    localStorage.setItem(`parkingCars_${selectedHouse}`, JSON.stringify(cars));
     } catch (error) {
       console.error('Error saving cars to localStorage:', error);
     }
@@ -126,7 +126,7 @@ function ParkingPage() {
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-bold text-gray-900">Parking</h1>
+              <h1 className="text-xl font-bold text-gray-900">Parking</h1>
             {cars.length < 2 && (
               <button
                 onClick={() => setShowAddForm(true)}
@@ -297,14 +297,14 @@ function ParkingPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
-                    <button
-                      onClick={() => handleRemoveCar(car.id)}
-                      className="text-red-500 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                  <button
+                    onClick={() => handleRemoveCar(car.id)}
+                    className="text-red-500 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                   </div>
                 </div>
               </div>

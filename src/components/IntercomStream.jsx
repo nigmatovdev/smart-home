@@ -1,127 +1,47 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Hls from 'hls.js';
 
-const IntercomStream = ({ uuid, channel, name, compact = false }) => {
+const IntercomStream = ({ uuid, channel, compact = false }) => {
   const videoRef = useRef(null);
   const [error, setError] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  let webrtc = null;
-  let mediaStream = null;
 
   useEffect(() => {
-    startPlay();
+    let hls;
+    setIsConnecting(true);
+    setError(null);
+
+    const video = videoRef.current;
+    const hlsUrl = `http://45.9.228.21:8084/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`;
+
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native HLS support (Safari, some mobile browsers)
+      video.src = hlsUrl;
+      video.addEventListener('loadedmetadata', () => setIsConnecting(false));
+      video.addEventListener('error', () => setError('Failed to load video'));
+    } else if (Hls.isSupported()) {
+      hls = new Hls();
+      hls.loadSource(hlsUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => setIsConnecting(false));
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        setError('Failed to load video');
+        setIsConnecting(false);
+      });
+    } else {
+      setError('HLS is not supported in this browser');
+      setIsConnecting(false);
+    }
+
     return () => {
-      if (webrtc) {
-        webrtc.close();
+      if (hls) {
+        hls.destroy();
+      }
+      if (video) {
+        video.src = '';
       }
     };
   }, [uuid, channel]);
-
-  const startPlay = async () => {
-    try {
-      setIsConnecting(true);
-      mediaStream = new MediaStream();
-      videoRef.current.srcObject = mediaStream;
-
-      webrtc = new RTCPeerConnection({
-        iceServers: [
-          { urls: ["stun:stun.l.google.com:19302"] },
-          { urls: ["stun:stun1.l.google.com:19302"] },
-          { urls: ["stun:stun2.l.google.com:19302"] }
-        ],
-        sdpSemantics: "unified-plan"
-      });
-
-      webrtc.addTransceiver("video", { direction: "recvonly" });
-      webrtc.addTransceiver("audio", { direction: "recvonly" });
-
-      webrtc.onnegotiationneeded = handleNegotiationNeeded;
-      webrtc.onsignalingstatechange = signalingStateChange;
-      webrtc.oniceconnectionstatechange = handleIceConnectionStateChange;
-      webrtc.onicecandidate = handleIceCandidate;
-
-      webrtc.ontrack = (event) => {
-        console.log(event.streams.length + ' track delivered');
-        mediaStream.addTrack(event.track);
-      };
-    } catch (err) {
-      console.error("Error starting play:", err);
-      setError("Failed to initialize video stream");
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const handleNegotiationNeeded = async () => {
-    try {
-      setIsConnecting(true);
-      let offer = await webrtc.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true
-      });
-      await webrtc.setLocalDescription(offer);
-      
-      const url = `/api/proxy/stream/${uuid}/channel/${channel}/webrtc?uuid=${uuid}&channel=${channel}`;
-      console.log('Making WebRTC request to:', url);
-      console.log('SDP offer:', webrtc.localDescription.sdp);
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          data: btoa(webrtc.localDescription.sdp),
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('WebRTC request failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          body: errorText
-        });
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.text();
-      console.log('Received WebRTC response:', data);
-
-      try {
-        const answer = new RTCSessionDescription({
-          type: 'answer',
-          sdp: atob(data),
-        });
-        console.log('Setting remote description:', answer);
-        await webrtc.setRemoteDescription(answer);
-      } catch (sdpError) {
-        console.error('Error setting remote description:', sdpError);
-        throw new Error('Failed to set remote description');
-      }
-    } catch (err) {
-      console.error("Negotiation error", err);
-      setError("Failed to establish video connection");
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const handleIceCandidate = (event) => {
-    if (event.candidate) {
-      console.log('New ICE candidate:', event.candidate);
-    }
-  };
-
-  const handleIceConnectionStateChange = () => {
-    console.log("ICE connection state changed:", webrtc.iceConnectionState);
-    if (webrtc.iceConnectionState === 'failed') {
-      setError("Connection failed. Please try again.");
-    }
-  };
-
-  const signalingStateChange = () => {
-    console.log("Signaling state changed:", webrtc.signalingState);
-  };
 
   if (compact) {
     return (
@@ -130,11 +50,8 @@ const IntercomStream = ({ uuid, channel, name, compact = false }) => {
           <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
             <div className="text-white text-center">
               <p className="text-lg font-medium">{error}</p>
-              <button 
-                onClick={() => {
-                  setError(null);
-                  startPlay();
-                }}
+              <button
+                onClick={() => window.location.reload()}
                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
               >
                 Retry
@@ -145,9 +62,8 @@ const IntercomStream = ({ uuid, channel, name, compact = false }) => {
           <>
             <video
               ref={videoRef}
-              id="videoPlayer"
               autoPlay
-              muted
+              controls
               playsInline
               className="w-full h-full object-cover"
             />
@@ -173,11 +89,8 @@ const IntercomStream = ({ uuid, channel, name, compact = false }) => {
             <div className="w-full h-[300px] flex items-center justify-center bg-gray-800 rounded-lg">
               <div className="text-white text-center">
                 <p className="text-lg font-medium">{error}</p>
-                <button 
-                  onClick={() => {
-                    setError(null);
-                    startPlay();
-                  }}
+                <button
+                  onClick={() => window.location.reload()}
                   className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                 >
                   Retry
@@ -188,9 +101,8 @@ const IntercomStream = ({ uuid, channel, name, compact = false }) => {
             <div className="relative">
               <video
                 ref={videoRef}
-                id="videoPlayer"
                 autoPlay
-                muted
+                controls
                 playsInline
                 className="w-full object-cover rounded-lg"
               />

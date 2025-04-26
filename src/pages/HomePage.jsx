@@ -22,8 +22,8 @@ function HomePage() {
 
   useEffect(() => {
     try {
-      // Load parking data for the selected house
-      const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
+    // Load parking data for the selected house
+    const savedCars = localStorage.getItem(`parkingCars_${selectedHouse}`);
       if (savedCars) {
         setCars(JSON.parse(savedCars));
       } else {
@@ -79,7 +79,7 @@ function HomePage() {
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-bold text-gray-900">Smart Home</h1>
+              <h1 className="text-xl font-bold text-gray-900">Smart Home</h1>
           </div>
         </div>
       </div>

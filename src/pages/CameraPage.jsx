@@ -73,7 +73,7 @@ function CameraPage() {
       <div className="bg-white shadow">
         <div className="px-4">
           <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-bold text-gray-900">Cameras</h1>
+              <h1 className="text-xl font-bold text-gray-900">Cameras</h1>
           </div>
         </div>
       </div>
