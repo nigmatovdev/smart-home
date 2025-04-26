@@ -13,7 +13,10 @@ const IntercomStream = ({ uuid, channel, compact = false }) => {
     setError(null);
 
     const video = videoRef.current;
-    const hlsUrl = `/api/proxy/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`;
+    const isProduction = process.env.NODE_ENV === 'production';
+    const hlsUrl = isProduction 
+      ? `https://${window.location.host}/api/proxy/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`
+      : `/api/proxy/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`;
 
     console.log('Loading HLS stream:', hlsUrl);
 
@@ -38,7 +41,10 @@ const IntercomStream = ({ uuid, channel, compact = false }) => {
           debug: true,
           enableWorker: true,
           lowLatencyMode: true,
-          backBufferLength: 90
+          backBufferLength: 90,
+          xhrSetup: (xhr) => {
+            xhr.withCredentials = false;
+          }
         });
         
         hlsRef.current = hls;
