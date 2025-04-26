@@ -12,7 +12,7 @@ const IntercomStream = ({ uuid, channel, compact = false }) => {
     setError(null);
 
     const video = videoRef.current;
-    const hlsUrl = `http://45.9.228.21:8084/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`;
+    const hlsUrl = `/api/proxy/stream/${uuid}/channel/${channel}/hls/live/index.m3u8`;
 
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       // Native HLS support (Safari, some mobile browsers)

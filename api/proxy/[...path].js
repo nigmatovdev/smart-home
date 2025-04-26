@@ -3,7 +3,7 @@ export default async function handler(req, res) {
   const fullPath = req.url.replace('/api/proxy/', '');
   
   // Check if this is a video stream request
-  const isVideoStream = fullPath.startsWith('stream/') && fullPath.includes('webrtc');
+  const isVideoStream = fullPath.startsWith('stream/');
   
   // Set the target URL based on the request type
   const targetUrl = isVideoStream 
@@ -36,42 +36,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get the raw body from the request
-    const requestBody = req.body;
-
-    console.log('Making request to:', {
-      targetUrl,
-      method: req.method,
-      body: requestBody,
-      headers: {
-        'Content-Type': isVideoStream ? 'application/x-www-form-urlencoded' : 'application/json',
-        'Accept': 'application/json',
-        'Authorization': req.headers.authorization
-      }
-    });
-
-    // For video stream requests, handle the body differently
-    let body;
-    if (isVideoStream && req.method === 'POST') {
-      // Extract the SDP data from the request body
-      const sdpData = requestBody.data || '';
-      body = new URLSearchParams({
-        data: sdpData
-      }).toString();
-    } else {
-      body = req.method !== 'GET' && req.method !== 'HEAD' 
-        ? JSON.stringify(requestBody)
-        : undefined;
-    }
-
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: {
-        'Content-Type': isVideoStream ? 'application/x-www-form-urlencoded' : 'application/json',
-        'Accept': 'application/json',
+        'Content-Type': isVideoStream ? 'application/vnd.apple.mpegurl' : 'application/json',
+        'Accept': isVideoStream ? 'application/vnd.apple.mpegurl' : 'application/json',
         'Authorization': req.headers.authorization
       },
-      body
+      body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined
     });
 
     console.log('Response status:', response.status);
@@ -90,6 +62,7 @@ export default async function handler(req, res) {
     if (isVideoStream) {
       const text = await response.text();
       console.log('Video stream response:', text);
+      res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
       res.status(response.status).send(text);
     } else {
       const data = await response.json();
