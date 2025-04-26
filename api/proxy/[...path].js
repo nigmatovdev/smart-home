@@ -37,6 +37,8 @@ export default async function handler(req, res) {
   try {
     // For HLS streams, we need to handle the response differently
     if (isVideoStream) {
+      console.log('Fetching HLS stream from:', targetUrl);
+      
       const response = await fetch(targetUrl, {
         method: 'GET',
         headers: {
@@ -44,12 +46,21 @@ export default async function handler(req, res) {
         }
       });
 
+      console.log('HLS stream response status:', response.status);
+      
       if (!response.ok) {
+        console.error('HLS stream fetch failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: targetUrl
+        });
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       // Get the content type from the response
       const contentType = response.headers.get('content-type') || 'application/vnd.apple.mpegurl';
+      
+      console.log('HLS stream content type:', contentType);
       
       // Set the appropriate headers
       res.setHeader('Content-Type', contentType);
